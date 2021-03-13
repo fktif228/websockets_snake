@@ -161,7 +161,7 @@ async def giop():
         try:
             await notify_state(snake_text)
             # print(snake_text)
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.5)
         except:
             print("!")
 
