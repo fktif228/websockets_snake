@@ -147,12 +147,8 @@ async def snake_game_module():
 
         # Отправка значений на клиент
         try:
-<<<<<<< HEAD
             await notify_state(shipping_customer_text)
-=======
-            await notify_state(snake_text)
             # print(snake_text)
->>>>>>> 3d2576961b233929b27f117dd360acec0bd8148a
             await asyncio.sleep(0.5)
         except:
             print("!")
