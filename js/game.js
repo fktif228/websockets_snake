@@ -74,3 +74,9 @@ function drawGame() {
 }
 
 let game = setInterval(drawGame, 100);
+
+
+// При закрытии страницы
+window.addEventListener('beforeunload', function (e) {
+  socket.send("poka");
+}, false);

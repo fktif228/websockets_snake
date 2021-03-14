@@ -26,15 +26,17 @@ async def notify_state(message):
 async def server(websocket, path):
     await register(websocket)  # добовляем сокет в массив
     try:
-        print("try")
+        # print("try")
         async for message in websocket:
-            print("for")
+            await unregister(websocket)
+            print(message)
             await asyncio.sleep(2)
 
     finally:
-        print("finally")
-        print(websocket)
-        await unregister(websocket)
+        # print("finally")
+        # print(websocket)
+        # await unregister(websocket)
+        pass
 
 
 async def snake_game_module():
@@ -79,9 +81,9 @@ async def snake_game_module():
     direction = ""
 
     while True:
-        print(score)
-        print(snake)
-        print(direction)
+        # print(score)
+        # print(snake)
+        # print(direction)
 
         # Новый ход змейки(Программный код пользователя)
         if (snake[0]["x"] == 320) and (snake[0]["y"] == 320):
