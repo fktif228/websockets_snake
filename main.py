@@ -1,32 +1,30 @@
 import asyncio
+import json
 import random
 import time
 import websockets
-
-STATE = {"value": 0}
 
 USERS = set()
 
 
 async def register(websocket):
+    """Добавление вебсокета в массива"""
     USERS.add(websocket)
 
 
 async def unregister(websocket):
+    """Удаление вебсокета из массива"""
     USERS.remove(websocket)
 
 
 async def notify_state(message):
+    """Отправка данных на клиент"""
     if USERS:
         await asyncio.wait([user.send(message) for user in USERS])
 
 
 async def server(websocket, path):
     await register(websocket)  # добовляем сокет в массив
-
-    # while True:
-    #     await asyncio.sleep(2)
-
     try:
         print("try")
         async for message in websocket:
@@ -39,8 +37,7 @@ async def server(websocket, path):
         await unregister(websocket)
 
 
-
-async def giop():
+async def snake_game_module():
     """модуль игры змейка"""
 
     def eat_tail(head, arr):
@@ -54,9 +51,6 @@ async def giop():
                 pass
                 # проигрыш
                 # clearInterval(game)
-
-    # x, y = 15, 15
-    # array = [[0 for j in range(y)] for i in range(x)]
 
     # Размер одной клетки в px.
     box = 32
@@ -84,9 +78,8 @@ async def giop():
     # Направление змейки.
     direction = ""
 
-    snake_text = '{"x": 32, "y": 64}'
     while True:
-
+        print(score)
         print(snake)
         print(direction)
 
@@ -150,27 +143,26 @@ async def giop():
         shipping_customer = [snake, [food]]
 
         # Преобразуем обьект в строку
-        snake_text = ""
-        for i in str(shipping_customer):
-            if i == '\'':
-                snake_text += '\"'
-            else:
-                snake_text += i
+        shipping_customer_text = json.dumps(shipping_customer)
 
         # Отправка значений на клиент
         try:
+<<<<<<< HEAD
+            await notify_state(shipping_customer_text)
+=======
             await notify_state(snake_text)
             # print(snake_text)
+>>>>>>> 3d2576961b233929b27f117dd360acec0bd8148a
             await asyncio.sleep(0.5)
         except:
             print("!")
 
 
-futer = giop()
+plug_module = snake_game_module()
 
 start_server = websockets.serve(server, "localhost", 5000)
 
 asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_until_complete(futer)
+asyncio.get_event_loop().run_until_complete(plug_module)
 
 asyncio.get_event_loop().run_forever()
