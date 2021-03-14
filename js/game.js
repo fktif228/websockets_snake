@@ -1,4 +1,4 @@
-let gimi = '[[{"x": 320, "y": 320}], [{"x": 320, "y": 320}]]';
+let gimi = '[[{"x": 320, "y": 320}], [{"x": 320, "y": 320}], [[1,1,1,1,1,1], [1,0,0,0,0,1], [1,0,0,0,0,1], [1,0,0,0,0,1], [1,0,0,0,0,1], [1,1,1,1,1,1]]]';
 
 const socket = new WebSocket('ws://localhost:5000');
 
@@ -15,7 +15,7 @@ socket.addEventListener('close', function (event) {
 // Listen for messages
 socket.addEventListener('message', function (event) {
   console.log('Message from server ', event.data);
-  gimi = event.data;
+  //gimi = event.data;
   //document.getElementsByTagName('div')[0].style.width = event.data + "%";
 });
 
@@ -65,13 +65,7 @@ let dir;
 //       dir = "down";
 // });
 
-// Если змейка укусила себя.
-function eatTail(head, arr) {
-  for(let i = 0; i < arr.length; i++) {
-    if(head.x == arr[i].x && head.y == arr[i].y)
-      clearInterval(game);
-  }
-}
+
 
 // Функция отрисовки игры.
 function drawGame() {
@@ -85,7 +79,24 @@ function drawGame() {
 
   // Отрисовка поля и еды.
   ctx.drawImage(ground, 0, 0);
-  ctx.drawImage(foodImg, json_line[1][0]["x"], json_line[1][0]["y"]);
+
+  // Отрисовка стенок на поле
+  ctx.fillStyle = "blue";
+  for (let i = 0; i < json_line[2].length; i++) {
+    for (let j = 0; j < json_line[2][i].length; j++) {
+      if (json_line[2][i][j] === 1) {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(i * box, (j + 2) * box, box, box);
+      }
+      else if (json_line[2][i][j] === 2) {
+        ctx.drawImage(foodImg, i * box, (j + 2) * box);
+      }
+      else if (json_line[2][i][j] !== 0) {
+        ctx.fillStyle = json_line[0][json_line[2][i][j]][1].toString();
+        ctx.fillRect(i * box, (j + 2) * box, box, box);
+      }
+    }
+  }
 
   // Отрисовка змейки.
   ctx.fillStyle = "red";
