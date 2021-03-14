@@ -1,4 +1,5 @@
 import asyncio
+import json
 import random
 import time
 import websockets
@@ -24,10 +25,6 @@ async def notify_state(message):
 
 async def server(websocket, path):
     await register(websocket)  # добовляем сокет в массив
-
-    # while True:
-    #     await asyncio.sleep(2)
-
     try:
         print("try")
         async for message in websocket:
@@ -54,9 +51,6 @@ async def snake_game_module():
                 pass
                 # проигрыш
                 # clearInterval(game)
-
-    # x, y = 15, 15
-    # array = [[0 for j in range(y)] for i in range(x)]
 
     # Размер одной клетки в px.
     box = 32
@@ -149,17 +143,12 @@ async def snake_game_module():
         shipping_customer = [snake, [food]]
 
         # Преобразуем обьект в строку
-        shipping_customer_text = ""
-        for i in str(shipping_customer):
-            if i == '\'':
-                shipping_customer_text += '\"'
-            else:
-                shipping_customer_text += i
+        shipping_customer_text = json.dumps(shipping_customer)
 
         # Отправка значений на клиент
         try:
             await notify_state(shipping_customer_text)
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.5)
         except:
             print("!")
 
