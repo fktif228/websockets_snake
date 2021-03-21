@@ -1,53 +1,29 @@
-import asyncio
-import json
-import random
+import os
 import time
-import websockets
+import json
+from flask import Flask, render_template, request, redirect, url_for
+from flask_socketio import SocketIO, emit
+from werkzeug.utils import secure_filename
 
-USERS = set()
+UPLOAD_FOLDER = 'C:/Users/ACER/OneDrive/Рабочий стол/2-семестр/ввпд/file_upload/uploads'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'py'}
 
-
-async def register(websocket):
-    """Добавление вебсокета в массива"""
-    USERS.add(websocket)
-
-
-async def unregister(websocket):
-    """Удаление вебсокета из массива"""
-    USERS.remove(websocket)
-
-
-async def notify_state(message):
-    """Отправка данных на клиент"""
-    if USERS:
-        await asyncio.wait([user.send(message) for user in USERS])
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = 'jsbcfsbfjefebw237u3gdbdc'
+socketio = SocketIO(app)
 
 
-async def server(websocket, path):
-    await register(websocket)  # добовляем сокет в массив
-    try:
-        # print("try")
-        async for message in websocket:
-            await unregister(websocket)
-            print(message)
-            await asyncio.sleep(2)
-
-    finally:
-        # print("finally")
-        # print(websocket)
-        # await unregister(websocket)
-        pass
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
-async def snake_game_module():
+def snake_game_module(filename):
     """модуль игры змейка"""
 
     def eat_tail(head, arr):
-        """
-        Если змейка укусила себя
-        :param head: обьект координаты головы змейки
-        :param arr: список обьектов координаты тела змейки
-        """
+        """Если змейка укусила себя"""
         for arr_i in arr:
             if (head["x"] == arr_i["x"]) and (head["y"] == arr_i["y"]):
                 pass
@@ -81,19 +57,12 @@ async def snake_game_module():
     direction = ""
 
     while True:
-        # print(score)
-        # print(snake)
-        # print(direction)
 
         # Новый ход змейки(Программный код пользователя)
-        if (snake[0]["x"] == 320) and (snake[0]["y"] == 320):
-            direction = "up"
-        elif (snake[0]["x"] == 320) and (snake[0]["y"] == 160):
-            direction = "left"
-        elif (snake[0]["x"] == 96) and (snake[0]["y"] == 160):
-            direction = "down"
-        elif (snake[0]["x"] == 96) and (snake[0]["y"] == 320):
-            direction = "right"
+        pm_name = 'uploads.' + filename
+        uploads = __import__(pm_name)
+        # import uploads.main
+        direction = uploads.main.user_algorithm(snake, direction)
 
         # Координаты головы змейки.
         snake_x = snake[0]["x"]
@@ -149,18 +118,51 @@ async def snake_game_module():
 
         # Отправка значений на клиент
         try:
-            await notify_state(shipping_customer_text)
+            socketio.emit('my response', shipping_customer_text, callback=messageRecived)
             # print(snake_text)
-            await asyncio.sleep(0.5)
+            time.sleep(0.1)
         except:
             print("!")
 
 
-plug_module = snake_game_module()
+@app.route('/upload_file', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('broadcast_game', filename=filename))
+    return render_template('upload_file.html')
 
-start_server = websockets.serve(server, "localhost", 5000)
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_until_complete(plug_module)
+@app.route('/broadcast_game')
+def broadcast_game():
+    """ggg"""
+    data = dict(filename=request.args.get('filename'))
+    return render_template('broadcast_game.html', data=data)
 
-asyncio.get_event_loop().run_forever()
+
+@app.route('/game', methods=['POST', 'GET'])
+def game():
+    """Запуск трансляции"""
+    if request.method == "POST":
+        filename = request.form['filename'][0:-3]
+        snake_game_module(filename)
+    else:
+        return render_template('game.html')
+
+
+def messageRecived():
+    print('message was received!!!')
+
+
+@socketio.on('my event')
+def handle_my_custom_event(json):
+    print('recived my event: ' + str(json))
+    socketio.emit('my response', json, callback=messageRecived)
+
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
+

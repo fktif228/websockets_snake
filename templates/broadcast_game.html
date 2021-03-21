@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form action="/game" method=post>
+        <input type="hidden" name="filename" value="{{ data.filename }}">
+        <input type=submit value="Запустить игру с файлом: {{ data.filename }}">
+    </form>
+</body>
+</html>

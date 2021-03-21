@@ -1,22 +1,17 @@
 let data_from_server = '[[{"x": 320, "y": 320}], [{"x": 320, "y": 320}]]';
 
-const socket = new WebSocket('ws://localhost:5000');
+var socket = io.connect( 'http://' + document.domain + ':' + location.port )
 
-// Connection opened
-socket.addEventListener('open', function (event) {
+// Подключения к серверу
+socket.on( 'connect', function() {
   console.log('Connected to the WS Server!')
-});
+})
 
-// Connection closed
-socket.addEventListener('close', function (event) {
-  console.log('Disconnected from the WS Server!')
-});
-
-// Listen for messages
-socket.addEventListener('message', function (event) {
-  console.log('Message from server ', event.data);
-  data_from_server = event.data;
-});
+// Получение сообщений с сервера
+socket.on('my response', function(msg) {
+  console.log('Message from server ', msg);
+  data_from_server = msg;
+})
 
 
 // Игровое поле и тип игры (2D).
@@ -25,11 +20,11 @@ const ctx = canvas.getContext("2d");
 
 // Текстура поля.
 const ground = new Image();
-ground.src = "img/ground.png";
+ground.src = "{{ url_for('static', filename='img/ground.png') }}";
 
 // Текстура еды.
 const foodImg = new Image();
-foodImg.src = "img/food.png";
+foodImg.src = "{{ url_for('static', filename='img/food.png') }}";
 
 // Размер одной клетки в px.
 let box = 32;
@@ -67,6 +62,7 @@ function drawGame() {
     ctx.fillStyle = "green";
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
   }
+
   // Отрисовка счета.
   ctx.fillStyle = "white";
   ctx.font = "50px Arial";
@@ -74,9 +70,3 @@ function drawGame() {
 }
 
 let game = setInterval(drawGame, 100);
-
-
-// При закрытии страницы
-window.addEventListener('beforeunload', function (e) {
-  socket.send("poka");
-}, false);
